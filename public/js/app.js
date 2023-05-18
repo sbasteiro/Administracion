@@ -23,7 +23,7 @@ function shippingUpdate(shippingId) {
     fetch(url, {
         method: 'PATCH',
         headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token2"]').getAttribute('content')
         }
     })
         .then(response => response.json())
