@@ -1,35 +1,24 @@
 function shippingDelete(shippingId) {
-    const url = '/api/softDeleteShipping/' + shippingId;
     if (confirm('¿Estás seguro de borrar el envío?')) {
-        fetch(url, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            }
-        })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data.message);
-            })
-        alert('Envío eliminado');
-        window.location.reload(true);
+        $.ajax({
+            url: "/api/softDeleteShipping/"+ shippingId,
+            type: "DELETE",
+            context: document.body
+        }).done(function() {
+            alert('Envío eliminado');
+            window.location.reload(true);
+        });
     } else {
         alert('Eliminación cancelada');
     }
 }
 
 function shippingUpdate(shippingId) {
-    const url = '/api/shippingUpdate/' + shippingId;
-    fetch(url, {
-        method: 'PATCH',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token2"]').getAttribute('content')
-        }
-    })
-        .then(response => response.json())
-        .then(data => {
-            console.log(data.message);
-        })
-    alert('Envío eliminado');
-    window.location.reload(true);
+        $.ajax({
+            url: "/api/shippingUpdate/"+ shippingId,
+            type: "PATCH",
+            context: document.body
+        }).done(function() {
+            window.location.reload(true);
+        });
 }
