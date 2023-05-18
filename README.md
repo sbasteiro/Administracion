@@ -27,3 +27,4 @@ a sumar envíos viejos, por lo que no hagas requests innecesarias.
 * Seguramente exista una librería en Laravel para definir los polígonos, encontré varias pero ninguna fue compatible. Quizas informar que libreria usar, salvo que se quiera llegar a la lógica sin usar laravel que me parece bien también.
 </br></br>
 * En la sección de Envios Pendientes, Envios Entregados, Envios Borrados el filtro no es para esa selección. Yo lo hice distinto, para que se pueda filtrar en cada una de las tablas formadas por esos filtros. Esto también permite buscar los borrados por los campos seleccionados.
+
