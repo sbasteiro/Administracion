@@ -95,8 +95,10 @@
                                 <td>
                                     @if ($shipping['status'] == 'pending')
                                         <span class="badge bg-secondary">Pendiente</span>
-                                    @else
+                                    @elseif ($shipping['status'] == 'delivered')
                                         <span class="badge bg-success">Entregado</span>
+                                    @else
+                                        <span class="badge bg-danger">Borrado</span>
                                     @endif
                                 </td>
                                 <td>
@@ -109,8 +111,8 @@
                                 <td>
                                     @if ($shipping['status'] == 'pending')
                                         <button class="btn btn-sm btn-success mb-1" onclick="shippingUpdate({{ $shipping['id'] }})">Ya lo entregué</button>
+                                        <button onclick="shippingDelete({{ $shipping['id'] }})" class="btn btn-sm btn-danger mb-1">Borrar</button>
                                     @endif
-                                    <button onclick="shippingDelete({{ $shipping['id'] }})" class="btn btn-sm btn-danger mb-1">Borrar</button>
                                 </td>
                             </tr>
                         @endforeach

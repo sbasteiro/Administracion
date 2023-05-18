@@ -53,7 +53,7 @@ class ShippingCommand extends Command
         $count = 0;
         $count_zone = 0;
 
-        while($status_code != 200 || $count = 10){
+        while($status_code != 200 || $count == 10){
             try {
                 $request = new Request('GET', $baseUrl.'/orders', $headers);
                 $res = $client->sendAsync($request)->wait();
@@ -63,7 +63,7 @@ class ShippingCommand extends Command
             } catch (\Exception $exception) {}
         }
 
-        while($status_code_zone != 200 || $count_zone = 10) {
+        while($status_code_zone != 200 || $count_zone == 10) {
             try {
                 $request = new Request('GET', $baseUrl . '/zones', $headers);
                 $res = $client->sendAsync($request)->wait();
@@ -82,24 +82,23 @@ class ShippingCommand extends Command
                 $zone_vector[$zone['id']]['y'][] = $point[0];
             }
         }
-
+        $id_shipping_list = Shipping::all()->pluck('id_shipping');
         if ($data['data']) {
             foreach ($data['data'] as $order) {
-
-                Shipping::create([
-                    'id_shipping' => $order['id'],
-                    'buyer_name' => $order['buyer_name'],
-                    'description' => $order['description'],
-                    'photo_url' => $order['photo_url'],
-                    'address' => $order['address'],
-                    'longitude' => $order['longitude'],
-                    'latitude' => $order['latitude'],
-                    'zone' => $this->getZone($order['longitude'], $order['latitude'], $zone_vector),
-                    'created_at' => $order['created_at'],
-                ]);
+                if (!in_array($order['id'], $id_shipping_list->toArray())) {
+                    Shipping::create([
+                        'id_shipping' => $order['id'],
+                        'buyer_name' => $order['buyer_name'],
+                        'description' => $order['description'],
+                        'photo_url' => $order['photo_url'],
+                        'address' => $order['address'],
+                        'longitude' => $order['longitude'],
+                        'latitude' => $order['latitude'],
+                        'zone' => $this->getZone($order['longitude'], $order['latitude'], $zone_vector),
+                        'created_at' => $order['created_at'],
+                    ]);
+                }
             }
-
-
         }
     }
 

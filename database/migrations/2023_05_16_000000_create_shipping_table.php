@@ -23,7 +23,7 @@ class CreateShippingTable extends Migration
             $table->string('zone');
             $table->decimal('longitude', 10, 8);
             $table->decimal('latitude', 10, 8);
-            $table->enum('status', ['pending', 'delivered'])->default('pending');
+            $table->enum('status', ['pending', 'delivered', 'deleted'])->default('pending');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->nullable();
             $table->timestamp('deleted_at')->nullable();

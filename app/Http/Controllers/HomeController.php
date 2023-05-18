@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Shipping;
 use Illuminate\Http\Request;
-use Illuminate\Database\Eloquent\Collection;
 
 class HomeController extends Controller
 {
@@ -55,7 +54,9 @@ class HomeController extends Controller
         $shipping_delete = Shipping::where('id', $id)->get();
         if ($shipping_delete){
             foreach ($shipping_delete as $shipping) {
-                $shipping->delete();
+                $shipping->status = 'deleted';
+                $shipping->deleted_at = now();
+                $shipping->save();
             }
         }
     }

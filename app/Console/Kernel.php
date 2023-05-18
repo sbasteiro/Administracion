@@ -22,8 +22,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('command:shipping')->everyMinute()
-        ->sendOutputTo('./log.txt');
+        $schedule->command('command:shipping')->everyTenMinutes();
     }
 
     /**
