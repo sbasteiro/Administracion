@@ -40,51 +40,21 @@ class ShippingCommand extends Command
      */
     public function handle()
     {
-        $baseUrl = env('API_ENDPOINT');
-
-        $accesstoken = env('ACCESS_TOKEN');
-
-        $client = new Client();
-        $headers = [
-            'Authorization' => 'Bearer '.$accesstoken
-        ];
-        $status_code = 0;
-        $status_code_zone = 0;
-        $count = 0;
-        $count_zone = 0;
-
-        while($status_code != 200 || $count == 10){
-            try {
-                $request = new Request('GET', $baseUrl.'/orders', $headers);
-                $res = $client->sendAsync($request)->wait();
-                $data = json_decode($res->getBody(), true);
-                $status_code = $res->getStatusCode();
-                $count++;
-            } catch (\Exception $exception) {}
-        }
-
-        while($status_code_zone != 200 || $count_zone == 10) {
-            try {
-                $request = new Request('GET', $baseUrl . '/zones', $headers);
-                $res = $client->sendAsync($request)->wait();
-                $zones = json_decode($res->getBody(), true);
-                $status_code_zone = $res->getStatusCode();
-                $count_zone++;
-            } catch (\Exception $exception) {}
-        }
-
+        $data = $this->resilencyCall('orders');
+        $zones = $this->resilencyCall('zones');
         $zone_vector = [];
 
-        foreach ($zones['data'] as $zone) {
+        foreach ($zones as $zone) {
             $zone_vector[$zone['id']]['name'] = $zone['name'];
             foreach ($zone['polygon_coordinates'] as $point) {
                 $zone_vector[$zone['id']]['x'][] = $point[1];
                 $zone_vector[$zone['id']]['y'][] = $point[0];
             }
         }
+
         $id_shipping_list = Shipping::all()->pluck('id_shipping');
-        if ($data['data']) {
-            foreach ($data['data'] as $order) {
+        if ($data) {
+            foreach ($data as $order) {
                 if (!in_array($order['id'], $id_shipping_list->toArray())) {
                     Shipping::create([
                         'id_shipping' => $order['id'],
@@ -121,5 +91,36 @@ class ShippingCommand extends Command
                 $c = !$c;
         }
         return $c;
+    }
+
+    function resilencyCall($endpoint) {
+        $status_code = 0;
+        $count = 0;
+        $data = [];
+        $page = 1;
+
+        $baseUrl = env('API_ENDPOINT');
+        $accessToken = env('ACCESS_TOKEN');
+        $client = new Client();
+        $headers = [
+            'Authorization' => 'Bearer '.$accessToken
+        ];
+        do {
+            do{
+                try {
+                    $request = new Request('GET', $baseUrl.'/'.$endpoint.'?page='.$page, $headers);
+                    $res = $client->sendAsync($request)->wait();
+                    $responseData  = json_decode($res->getBody(), true);
+                    $total = $responseData['total'];
+                    $per_page = $responseData['per_page'];
+                    $data = array_merge($data, $responseData['data']);
+                    $status_code = $res->getStatusCode();
+                    $page++;
+                } catch (\Exception $exception) {
+                    $count++;
+                }
+            }  while ($status_code != 200 && $count < 100);
+        } while ($page <= ($total/$per_page));
+        return $data;
     }
 }

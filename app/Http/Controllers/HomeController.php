@@ -35,7 +35,7 @@ class HomeController extends Controller
         if ($order_by){
             $shipping->orderBy('created_at', $order_by);
         }
-        $orders_shipping = $shipping->paginate(10);
+        $orders_shipping = $shipping->paginate(50);
         $pending_count = Shipping::where('status', 'pending')->count();
         $delivered_count = Shipping::where('status', 'delivered')->count();
         $deleted_count = Shipping::onlyTrashed()->count();

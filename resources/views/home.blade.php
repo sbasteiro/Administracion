@@ -62,12 +62,12 @@
                     <h1 class="h2">Mis envíos</h1>
                     <div class="btn-toolbar mb-2 mb-md-0">
                         <div class="btn-group me-2">
-                            <a type="button" class="btn btn-sm btn-outline-secondary active"
+                            <a type="button" class="btn btn-sm btn-outline-secondary @if ($order_by == 'desc') active @endif"
                                href="/?q={{ $to_search }}&context={{ $context }}&order_by=desc">
                                 <i class="fa fa-sort-alpha-up me-1"></i>
                                 Más nuevos
                             </a>
-                            <a type="button" class="btn btn-sm btn-outline-secondary"
+                            <a type="button" class="btn btn-sm btn-outline-secondary @if ($order_by == 'asc') active @endif"
                                href="/?q={{ $to_search }}&context={{ $context }}&order_by=asc">
                             <i class="fa fa-sort-alpha-down-alt me-1"></i>
                                 Más viejos
@@ -118,9 +118,7 @@
                         @endforeach
                         </tbody>
                     </table>
-                    <div class="col-md-6 offset-md-3">
                         {!! $orders_shipping->links() !!}
-                    </div>
                 </div>
             </main>
 
