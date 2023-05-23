@@ -14,7 +14,7 @@ composer install
 cp .env.example .env
 </br>
 php artisan key:generate
-
+</br></br></br>
 * Correr el comando siguiente para ejecutar la migración más reciente, cree que es la más reciente:
 </br>
 php artisan migrate
