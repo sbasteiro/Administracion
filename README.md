@@ -8,17 +8,23 @@ INDICACIONES:
 * Descargar el repositorio ubicado en: https://github.com/sbasteiro/administrado
 
 * Ejecutar:
+</br>
 composer install
+</br>
 cp .env.example .env
+</br>
 php artisan key:generate
 
 * Correr el comando siguiente para ejecutar la migración más reciente, cree que es la más reciente:
+</br>
 php artisan migrate
 
 * Completar con la información de su entorno, en el archivo .env que se generó, los valores de 
+</br>
 DB_DATABASE, DB_USERNAME, DB_PASSWORD, API_ENDPOINT, ACCESS_TOKEN, RETRIES
 
-* La función que se utilizó para encontrar las zonas por los puntos de los polígonos, está en esta URL: https://itecnote.com/tecnote/php-find-point-in-polygon-php/
+* La función que se utilizó para encontrar las zonas por los puntos de los polígonos, está en esta URL:
+</br> https://itecnote.com/tecnote/php-find-point-in-polygon-php/
 
 
 
