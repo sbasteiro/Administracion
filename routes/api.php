@@ -2,7 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ShippingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,6 +19,6 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::delete('/softDeleteShipping/{id}', [HomeController::class, 'softDeleteShipping']);
+Route::delete('/shipping/{id}', [ShippingController::class, 'Delete']);
 
-Route::patch('/shippingUpdate/{id}', [HomeController::class, 'shippingUpdate']);
+Route::patch('/shipping/{id}', [ShippingController::class, 'Update']);

@@ -1,7 +1,7 @@
 function shippingDelete(shippingId) {
     if (confirm('¿Estás seguro de borrar el envío?')) {
         $.ajax({
-            url: "/api/softDeleteShipping/"+ shippingId,
+            url: "/api/shipping/"+ shippingId,
             type: "DELETE",
             context: document.body
         }).done(function() {
@@ -15,7 +15,7 @@ function shippingDelete(shippingId) {
 
 function shippingUpdate(shippingId) {
         $.ajax({
-            url: "/api/shippingUpdate/"+ shippingId,
+            url: "/api/shipping/"+ shippingId,
             type: "PATCH",
             context: document.body
         }).done(function() {

@@ -21,7 +21,7 @@ class Shipping extends Model
         'description',
         'photo_url',
         'address',
-        'zone',
+        'zone_id',
         'longitude',
         'latitude',
         'status',
@@ -29,4 +29,9 @@ class Shipping extends Model
         'update_at',
         'deleted_at'
     ];
+
+    public function zone()
+    {
+        return $this->belongsTo(Zone::class);
+    }
 }

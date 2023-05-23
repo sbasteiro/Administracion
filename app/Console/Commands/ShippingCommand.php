@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Shipping;
+use App\Models\Zone;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
 use Illuminate\Console\Command;
@@ -40,22 +41,35 @@ class ShippingCommand extends Command
      */
     public function handle()
     {
-        $data = $this->resilencyCall('orders');
-        $zones = $this->resilencyCall('zones');
-        $zone_vector = [];
+        $shipping = $this->resilencyCall('orders');
+        $zones = Zone::all();
+        if ($zones) {
+            $zones = [];
+            $zonesApi = $this->resilencyCall('zones');
+            foreach ($zonesApi as $zoneApi) {
+                if (!Zone::where("id_zone", $zoneApi['id'])->exists()) {
+                    $zones[] = Zone::create([
+                        'id_zone' => $zoneApi['id'],
+                        'name' => $zoneApi['name'],
+                        'points' => json_encode($zoneApi['polygon_coordinates']),
+                    ]);
+                }
+            }
+        }
 
+        $zone_vector = [];
         foreach ($zones as $zone) {
-            $zone_vector[$zone['id']]['name'] = $zone['name'];
-            foreach ($zone['polygon_coordinates'] as $point) {
+            $zone_vector[$zone['id']]['id'] = $zone['id'];
+            $points = json_decode($zone['points']);
+            foreach ($points as $point) {
                 $zone_vector[$zone['id']]['x'][] = $point[1];
                 $zone_vector[$zone['id']]['y'][] = $point[0];
             }
         }
 
-        $id_shipping_list = Shipping::all()->pluck('id_shipping');
-        if ($data) {
-            foreach ($data as $order) {
-                if (!in_array($order['id'], $id_shipping_list->toArray())) {
+        if ($shipping) {
+            foreach ($shipping as $order) {
+                if (!Shipping::where("id_shipping", $order['id'])->exists()) {
                     Shipping::create([
                         'id_shipping' => $order['id'],
                         'buyer_name' => $order['buyer_name'],
@@ -64,7 +78,7 @@ class ShippingCommand extends Command
                         'address' => $order['address'],
                         'longitude' => $order['longitude'],
                         'latitude' => $order['latitude'],
-                        'zone' => $this->getZone($order['longitude'], $order['latitude'], $zone_vector),
+                        'zone_id' => $this->getZone($order['longitude'], $order['latitude'], $zone_vector),
                         'created_at' => $order['created_at'],
                     ]);
                 }
@@ -72,15 +86,31 @@ class ShippingCommand extends Command
         }
     }
 
+    /**
+     * Get the corresponding zone
+     * @param $longitude
+     * @param $latitude
+     * @param $zone_vector
+     * @return int|string|null
+     */
     public function getZone($longitude, $latitude, $zone_vector) {
-       foreach ($zone_vector as $zone) {
+       foreach ($zone_vector as $key => $zone) {
             if ($this->is_in_polygon($zone['x'], $zone['y'], $longitude, $latitude )) {
-                return $zone['name'];
+                return $key;
             }
        }
-       return "Invalid Zone";
+       return null;
     }
 
+    /**
+     * Find polygon by points
+     * more info: https://itecnote.com/tecnote/php-find-point-in-polygon-php/
+     * @param $vertices_x
+     * @param $vertices_y
+     * @param $longitude_x
+     * @param $latitude_y
+     * @return bool|int
+     */
     function is_in_polygon($vertices_x, $vertices_y, $longitude_x, $latitude_y)
     {
         $points_polygon = count($vertices_x) - 1;
@@ -93,9 +123,14 @@ class ShippingCommand extends Command
         return $c;
     }
 
+    /**
+     * General call to endpoints
+     * @param $endpoint
+     * @return array
+     * @throws \Exception
+     */
     function resilencyCall($endpoint) {
-        $status_code = 0;
-        $count = 0;
+        $retries = env('RETRIES');
         $data = [];
         $page = 1;
 
@@ -105,22 +140,25 @@ class ShippingCommand extends Command
         $headers = [
             'Authorization' => 'Bearer '.$accessToken
         ];
+        $maxDBIdShipping = Shipping::max('id_shipping') ?? 1;
         do {
-            do{
-                try {
-                    $request = new Request('GET', $baseUrl.'/'.$endpoint.'?page='.$page, $headers);
-                    $res = $client->sendAsync($request)->wait();
-                    $responseData  = json_decode($res->getBody(), true);
-                    $total = $responseData['total'];
-                    $per_page = $responseData['per_page'];
-                    $data = array_merge($data, $responseData['data']);
-                    $status_code = $res->getStatusCode();
-                    $page++;
-                } catch (\Exception $exception) {
-                    $count++;
+            $responseData = retry($retries, function () use($client, $baseUrl, $endpoint, $page, $headers) {
+                $request = new Request('GET', $baseUrl.'/'.$endpoint.'?page='.$page, $headers);
+                $res = $client->sendAsync($request)->wait();
+                $status_code = $res->getStatusCode();
+                if ($status_code != 200) {
+                    throw new \Exception('The API failed to retrieve the data');
                 }
-            }  while ($status_code != 200 && $count < 100);
-        } while ($page <= ($total/$per_page));
+                return json_decode($res->getBody(), true);
+            }, 100);
+            $oldestAPIShippingId = $responseData['data'][count($responseData['data'])-1]['id'];
+            $last_page = $responseData['last_page'];
+            $data = array_merge($data, $responseData['data']);
+            $page++;
+        } while (
+            ($endpoint == 'orders' && $oldestAPIShippingId > $maxDBIdShipping)
+            || ($endpoint == 'zones' && $page <= $last_page)
+        );
         return $data;
     }
 }

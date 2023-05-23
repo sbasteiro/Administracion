@@ -107,7 +107,7 @@
                                 </td>
                                 <td>{{ $shipping['address'] }}</td>
                                 <td>{{ $shipping['buyer_name'] }}</td>
-                                <td>{{ $shipping['zone'] }}</td>
+                                <td>{{ $shipping['zone']['name'] }}</td>
                                 <td>
                                     @if ($shipping['status'] == 'pending')
                                         <button class="btn btn-sm btn-success mb-1" onclick="shippingUpdate({{ $shipping['id'] }})">Ya lo entregué</button>

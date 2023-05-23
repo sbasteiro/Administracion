@@ -12,7 +12,7 @@ class HomeController extends Controller
         $to_search = $request->input('q') ?? '';
         $context = $request->input('context') ?? '';
         $order_by = $request->input('order_by');
-        $shipping = Shipping::whereNotNull('id');
+        $shipping = Shipping::with('zone');
         switch ($context) {
             case 'pending':
                 $shipping->where('status', 'pending');
@@ -48,25 +48,5 @@ class HomeController extends Controller
             'to_search',
             'order_by'
         ));
-    }
-
-    public function softDeleteShipping($id){
-        $shipping_delete = Shipping::where('id', $id)->get();
-        if ($shipping_delete){
-            foreach ($shipping_delete as $shipping) {
-                $shipping->status = 'deleted';
-                $shipping->deleted_at = now();
-                $shipping->save();
-            }
-        }
-    }
-
-    public function shippingUpdate($id){
-        $shipping = Shipping::find($id);
-        if ($shipping) {
-            $shipping->status = 'delivered';
-            $shipping->updated_at = now();
-            $shipping->save();
-        }
     }
 }
