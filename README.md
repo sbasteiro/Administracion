@@ -1,6 +1,4 @@
-![Administrado](https://administrado-assets.s3.amazonaws.com/img/logo_mail.png "Administrado")
-
-# Administrado challenge
+# Administrción
 Sabrina Basteiro
 
 INDICACIONES:
